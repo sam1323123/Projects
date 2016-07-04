@@ -1,0 +1,27 @@
+ if((numRead= sscanf(uri, "%s//%s/%s",hd, server, subPath)) == 3)
+    {
+      //case without port number
+      strcpy(path, "/") ;
+      strcat(path, subPath) ;
+      //adds back / to front of path
+      strcpy(port, hd) ; //copy protocol into port
+      
+      dbg_printf(server) ;
+      dbg_printf(port) ;
+      dbg_printf(path) ;
+      return 1 ;
+    }
+  else if((numRead=sscanf(uri,"%s//%s:%s/%s",hd,server,port,subPath)) == 4)
+    {
+      //case with port number
+      strcpy(path, "/") ;
+      strcat(path, subPath) ;
+      //adds back / to front of path
+      dbg_printf(server) ;
+      dbg_printf(port) ;
+      dbg_printf(path) ;
+      return 1 ;
+    }
+  printf("sscanf read %d %s\n",numRead,hd) ;
+  dbg_printf("PARSE_URI FAIL\n");
+  return 0 ; */
