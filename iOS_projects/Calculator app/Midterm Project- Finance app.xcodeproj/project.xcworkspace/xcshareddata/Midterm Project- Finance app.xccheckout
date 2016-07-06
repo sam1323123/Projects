@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>346B1DBA-E19A-4B14-86B0-51A499ECB842</string>
+	<key>IDESourceControlProjectName</key>
+	<string>Midterm Project- Finance app</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>9B3B6CB4D316A1DACE8D9B4107497482C5577D6F</key>
+		<string>unix.andrew.cmu.edu:/afs/andrew/course/98/222/git/samuell1</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>Midterm Project- Finance app/Midterm Project- Finance app.xcodeproj</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>9B3B6CB4D316A1DACE8D9B4107497482C5577D6F</key>
+		<string>../../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>unix.andrew.cmu.edu:/afs/andrew/course/98/222/git/samuell1</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>111</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>9B3B6CB4D316A1DACE8D9B4107497482C5577D6F</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>9B3B6CB4D316A1DACE8D9B4107497482C5577D6F</string>
+			<key>IDESourceControlWCCName</key>
+			<string>samuell1</string>
+		</dict>
+	</array>
+</dict>
+</plist>
