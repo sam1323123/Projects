@@ -1,0 +1,12 @@
+#use <conio> 
+
+
+int main () {
+int i; int sum = 0;
+for (i = 15; i <= 122; i++)
+sum += i;
+
+int* a = NULL ;
+if(a == NULL) println("NULL NULL PASSED") ;
+return sum;
+}

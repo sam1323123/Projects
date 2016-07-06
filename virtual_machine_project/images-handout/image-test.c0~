@@ -1,0 +1,23 @@
+#use <conio>
+#use <util>
+#use <string>
+
+int test_reflect() {
+pixel[] test_Image = alloc_array(pixel, 1);
+test_Image[0] = 5;
+pixel[] resultImage = alloc_array(pixel, 4);
+resultImage[0] = 5;
+resultImage[1] = 5;
+resultImage[2] = 5;
+resultImage[3] = 5;
+print(string_fromint(reflect(test_Image, 1,1)[0]));
+print("\n");
+assert(reflect(test_Image, 1,1)[0] == 5);
+assert(reflect(test_Image, 1,1)[1] == 5);
+assert(reflect(test_Image, 1,1)[3] == 5);  
+resultImage[0] = 1;
+resultImage[3] = 4;
+assert(reflect_y(resultImage, 4,1)[0] == 4);
+assert(reflect_x(resultImage, 1,4)[0] == 4);
+return 0;
+}

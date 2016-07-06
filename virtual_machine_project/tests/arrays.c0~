@@ -1,0 +1,26 @@
+#use <conio>
+
+int main() {
+    int[] A = alloc_array(int, 5);
+    int[] B ;
+    //@assert A[4] == 0 && A[1] == 0 ;
+    A[3] = 123 ;
+    printint(A[3]);
+    printint(B[0]) ;
+    println("\n") ;
+    for(int i = 0; i < 5 ; i++)
+       {
+         A[i] = i * 30 ;
+       }
+
+    int sum = 0;
+
+    for(int i = 0 ; i < 5; i++)
+     {
+       sum += A[i] ;
+     }
+    printint(sum) ;
+    println("") ;
+//    printint(A[6]) ; 
+    return 0;
+}

@@ -1,0 +1,47 @@
+#use <conio>
+
+struct test {
+     string s1 ;
+     char[] arr1 ;
+     } ;
+
+typedef struct test* test_t ;
+
+
+int main() {
+    int[] I = alloc_array(int,0) ;
+    //@assert \length(I) == 0 ;
+    char[] A = alloc_array(char, 5);
+    //@assert \length(A) == 5 ;
+    printchar(A[3]);
+    A[3] = '!' ;
+    printchar(A[3]) ;
+    println("") ;
+    A[0] = 'h' ;
+    A[1] = 'e' ;
+    A[2] = 'l' ; A[3] = 'l' ;
+    A[4] = 'o' ;
+    for(int i = 0; i < 5; i++) printchar(A[i]) ;
+    test_t t1 = alloc(struct test) ;
+    t1->s1 = "STRUCT PASSED 1" ;
+    t1->arr1 = A ;
+    println("") ; 
+    printchar(t1->arr1[4]) ;
+    println("") ;
+    println(t1->s1) ;
+
+    int** dPt = alloc(int*) ;
+    *dPt = alloc(int) ;
+    **dPt = 15122 ;
+    printint(**dPt) ;
+    println("") ;
+    char* cPt = alloc(char) ;
+    *cPt = 'z' ;
+    printchar(*cPt) ;
+    
+
+    println("Expecting ERROR next") ;
+    int[] inv = alloc_array(int, -1) ;
+    
+    return 0;
+}

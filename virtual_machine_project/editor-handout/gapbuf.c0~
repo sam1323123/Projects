@@ -1,0 +1,163 @@
+/*
+ * Gap Buffers
+ * 
+ * A gap buffer data structure is represented by an array of chars
+ * stored along with its size (limit) and two integers representing
+ * the beginning (inclusive, gap start) and end (exclusive, gap end)
+ * of the gap.
+ * 
+ * 15-122 Principles of Imperative Computation */
+
+#use <string>
+
+typedef struct gapbuf_header gapbuf;
+typedef gapbuf* elem; // The data in linked lists will be gap buffers
+
+/*** Interface (missing appropriate contracts) ***/
+
+struct gapbuf_header {
+  int limit;     /* limit > 0                      */
+  char[] buffer; /* \length(buffer) == limit       */
+  int gap_start; /* 0 <= gap_start                 */
+  int gap_end;   /* gap_start  <= gap_end <= limit */
+};
+
+bool is_gapbuf(gapbuf* G);
+
+bool gapbuf_empty(gapbuf* G);    /* Returns true if the buffer is empty */
+bool gapbuf_full(gapbuf* G);     /* Returns true if the buffer is full  */
+bool gapbuf_at_left(gapbuf* G);  /* Returns true if the gap is at the   */
+                                 /*   left end of the buffer            */
+bool gapbuf_at_right(gapbuf* G); /* Returns true if the gap is at the   */
+                                 /*   right end of the buffer           */
+
+gapbuf* gapbuf_new(int limit);   /* Create a new gapbuf of size limit   */
+void gapbuf_forward(gapbuf* G);  /* Move the gap forward, to the right  */
+void gapbuf_backward(gapbuf* G); /* Move the gap backward, to the left  */
+void gapbuf_insert(gapbuf* G, char c); /* Insert char c before the gap  */
+void gapbuf_delete(gapbuf* G);   /* Delete the char before the gap      */
+
+/*** Implementation ***/
+
+bool buf_is_exp_length(gapbuf* G)
+//@requires G != NULL;
+{
+   //@assert \length(G->buffer) == G->limit;
+   return true;
+}
+
+bool is_gapbuf(gapbuf* G) 
+{
+   bool test_NULL = (G != NULL);
+   if(test_NULL)
+   {   
+       bool lim = G->limit > 0 ;
+       bool start = G->gap_start >= 0 && G->gap_start<= G->gap_end ;
+       bool end = G->gap_start <= G->gap_end && G->gap_end <= G->limit;
+       bool buf = G->buffer != NULL ;
+       return lim && start && buf_is_exp_length(G) && end && buf; 
+   }
+   else return false ;
+}
+
+
+bool gapbuf_empty(gapbuf* G)
+//@requires G != NULL;
+//@requires is_gapbuf(G);
+{
+   return G->gap_start == 0 && G->gap_end == G->limit ;
+}
+
+bool gapbuf_full(gapbuf* G)
+//@requires G != NULL;
+//@requires is_gapbuf(G);
+{
+   return G->gap_start == G->gap_end ;
+}
+
+bool gapbuf_at_left(gapbuf* G)
+//@requires G != NULL;
+//@requires is_gapbuf(G);
+{
+   return G->gap_start == 0;
+}
+
+bool gapbuf_at_right(gapbuf* G)
+//@requires G != NULL;
+//@requires is_gapbuf(G);
+{
+   return G->gap_end == G->limit;
+}
+
+
+gapbuf* gapbuf_new(int limit)
+//@requires limit > 0;
+//@ensures \result != NULL && is_gapbuf(\result);
+//@ensures gapbuf_empty(\result);
+//@ensures gapbuf_at_left(\result) && gapbuf_at_right(\result);
+{
+    gapbuf* G = alloc(struct gapbuf_header) ; 
+    G->limit = limit;
+    G->gap_start = 0;
+    G->gap_end=limit;
+    G->buffer = alloc_array(char, limit);
+    return G;
+}
+
+void gapbuf_forward(gapbuf* G)
+//@requires G != NULL && is_gapbuf(G);
+//@requires !(gapbuf_empty(G) || gapbuf_at_right(G)) ;
+//@ensures G!= NULL && is_gapbuf(G);
+{
+      int initial = G->gap_start;
+      char char_to_shift = G->buffer[G->gap_end]; 
+      //shift char at end of gap to front 
+      G->buffer[initial] = char_to_shift;
+      G->gap_start = initial + 1;
+      G->gap_end = G->gap_end + 1;
+      return ;
+
+}
+
+void gapbuf_backward(gapbuf* G)
+//@requires G != NULL && is_gapbuf(G);
+//@requires !(gapbuf_empty(G) || gapbuf_at_left(G)) ;
+//@ensures G!= NULL && is_gapbuf(G);
+{
+    
+       int initial_start = G->gap_start ;
+       int initial_end = G->gap_end ;
+       char char_to_shift = G->buffer[initial_start - 1];
+       // char to left of gap_start
+       G->buffer[initial_end - 1] = char_to_shift ;
+       G->gap_start = initial_start - 1;
+       G->gap_end = initial_end - 1;
+       return ; 
+}
+
+void gapbuf_insert(gapbuf* G, char C)
+//@requires G != NULL && is_gapbuf(G);
+//@requires !gapbuf_full(G);
+//@ensures G!= NULL && is_gapbuf(G);
+//@ensures ! gapbuf_empty(G);
+{
+    
+      G->buffer[G->gap_start] = C ;
+      //insert char C
+      G->gap_start = G->gap_start +1 ;
+      return ; 
+    
+}
+
+void gapbuf_delete(gapbuf* G)
+//@requires G != NULL && is_gapbuf(G);
+//@requires !gapbuf_empty(G) && !gapbuf_at_left(G);
+//@ensures G!= NULL && is_gapbuf(G);
+{
+   G->gap_start = G->gap_start - 1;
+   return ;
+}
+
+
+
+

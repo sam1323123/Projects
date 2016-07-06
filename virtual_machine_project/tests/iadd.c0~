@@ -1,0 +1,8 @@
+int main () {
+  int x = 0xDEADBEEF ;
+  int y = 3 ;
+  int z = 0 ;
+  if(z > 0) return x + y ;
+  return (1<< 31) / (20 % 1 -1) ;
+//    return 2 + 20 ;
+}

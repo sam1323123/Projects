@@ -1,0 +1,100 @@
+#use <util>
+#use <conio>
+#use "arrayutil.c0"
+
+int calc_intensity(pixel[] pixels, int width, int height, int[] mask, int maskWidth, int startRow,int startCol, int colour) 
+// clacultes intensity of a colour for a pixel
+
+{
+   int sum = 0;
+   int multSum = 0;
+   int midRow = (maskWidth -1)/2;
+   int midCol = midRow;
+   int totalRow = maskWidth;
+   
+
+   for(int row=0; row < totalRow; row++)
+     //@loop_invariant 0 <= row && row <= maskWidth;
+   {   
+     int row_in_main = startRow + (row - midRow); 
+  // finds row in main image
+     for (int col=0; col < totalRow; col ++)
+     //@loop_invariant 0 <= col && col <= maskWidth;
+     {      
+        int col_in_main = startCol + (col - midCol);
+        if (is_valid_pixel(row_in_main, col_in_main, width,height))  
+        {
+         // if pixel is within bounds of image array
+         //@assert 0<= get_index(row,col,maskWidth,maskWidth);
+         //@assert get_index(row,col,maskWidth,maskWidth)< \length(mask);
+           int maskInt = mask[get_index(row,col,maskWidth,maskWidth)];
+          // integer at mask[maskInt]
+           sum = sum + maskInt;
+         //@assert 0<= get_index(row_in_main,col_in_main,width,height);
+         //@assert get_index(row_in_main,col_in_main ,width,height)< \length(pixels);
+           int image_pixel = pixels[get_index(row_in_main, col_in_main,width,height)];
+           int intensity = 0;  // intensity of colur of pixel
+           if (colour == 1) {
+             intensity = get_red(image_pixel);
+                             }
+           else if (colour == 2) intensity = get_green(image_pixel);
+           else if (colour == 3) intensity = get_blue(image_pixel);
+           multSum = multSum + (maskInt * intensity);
+           }
+
+        } 
+
+     }
+   int result = multSum / sum;
+   int scale_255 = 0xFF;
+   int pixel_intensity = result & scale_255;  
+   // ensures pixel intensity is 0<= intensity <= 255
+   //@assert 0<= pixel_intensity && pixel_intensity <= 255;
+   return pixel_intensity;   
+}
+
+
+
+pixel[] blur(pixel[] pixels, int width, int height, int[] mask, int maskWidth)
+//@requires maskWidth > 0;
+//@requires \length(mask) >=1;
+//@requires \length(mask) >= maskWidth;
+//@requires width*height == \length(pixels);
+//@requires maskWidth % 2 ==1;
+/*@requires (maskWidth) * maskWidth == \length(mask);
+@requires le_seg(0, mask, 0, \length(mask));
+@requires 0 <= get_index((maskWidth-1)/2,(maskWidth-1)/2, maskWidth,maskWidth);
+@requires \length(mask)> get_index((maskWidth-1)/2,(maskWidth-1)/2,maskWidth,maskWidth); 
+@requires mask[get_index((maskWidth -1)/2,(maskWidth -1)/2, maskWidth,maskWidth)]>0; @*/
+  
+{  
+
+   pixel[] result = alloc_array(pixel, width*height);
+
+   for(int row = 0; row< height; row++)
+   //@loop_invariant  0<= row && row<= height;
+   {
+     for(int col = 0; col < width; col++)
+     //@loop_invariant  0<= col && col<= width;
+     {       
+        //@assert is_valid_pixel(row,col,width,height);
+        int index = get_index(row,col,width,height);
+        //@assert 0<= index && index< \length(pixels);
+        pixel image_pixel = pixels[index];
+        int red = get_red(image_pixel);
+        int green = get_green(image_pixel);
+        int blue = get_blue(image_pixel);
+        int alpha = get_alpha(image_pixel);
+        red = calc_intensity(pixels, width, height, mask, maskWidth,row,col,1);
+        green= calc_intensity(pixels, width, height, mask,maskWidth,row,col,2);
+        blue = calc_intensity(pixels, width, height, mask,maskWidth,row,col,3);
+        pixel blurred = make_pixel(alpha, red, green, blue);
+        //@assert 0<= index && index< \length(result);
+        result[index] = blurred;
+ 
+         }
+     }
+return result;
+}
+
+

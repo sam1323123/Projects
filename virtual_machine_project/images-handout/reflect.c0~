@@ -1,0 +1,151 @@
+#use <conio>
+#use <util>
+
+pixel[] reflect_y(pixel[] pixels, int width, int height) 
+//@requires is_valid_imagesize(width, height);
+{
+  int arrayLength = width * height;
+  pixel[] result = alloc_array(pixel, (width * height));
+  int midCol = -1;  // axis
+  int stopIndex =	 0; // index to stop iteration
+  if (width == 1) return pixels;
+// no reflection necessary
+  if (width % 2 == 1) // if odd number of cols
+  {
+     midCol	= (width - 1)/2;
+     stopIndex = midCol;
+   }
+  else
+  {
+   stopIndex = width/2 ;
+   }
+ int constantSum = (width - 1) ;	// sum of reflection column numbers
+ for (int row = 0;  row < height; row++) 
+ //@loop_invariant 0<= row && row <= height;
+ {
+   for (int col = 0; col <stopIndex; col++)
+  //@loop_invariant 0<= col && col <= stopIndex;
+  //loop_invariant col <= constantSum/2; 
+   {   
+      int otherCol = 0;
+     if (midCol != col) 
+     { 
+       //  reflection needed	
+       otherCol = constantSum - col; // col to be reflected
+      //@assert is_valid_pixel(row,col,width,height);
+       int index1 = get_index(row,col,width,height);
+       //@assert is_valid_pixel(row,otherCol,width,height);
+       int index2 = get_index(row,otherCol,width,height);
+       //@assert 0<= index1 && index1< \length(result);
+       //@assert  index1 < \length(pixels);
+       //@assert 0<= index2 && index2< \length(result);
+       //@assert  index2 < \length(pixels);
+       result[index2] = pixels[index1];  // reflection occurs here
+       result[index1] = pixels[index2];	    	     
+      }
+
+        }
+          }
+  return result;
+}
+
+
+pixel[] reflect_x(pixel[] pixels,int  width, int height)
+//@requires is_valid_imagesize(width, height);
+{
+  if(height == 1) return pixels;
+  int arrayLength = width * height;
+  pixel[] result = alloc_array(pixel, (width * height));
+  int midRow = -1;  // axis
+  int stopIndex =  0; // index to stop iteration
+  if (height % 2 == 1) // if odd number of rows
+  {
+     midRow = (height - 1)/2;
+     stopIndex = midRow;
+   }
+  else {  //  even num of rows
+   stopIndex = height/2 ;
+       } 
+  int constantSum  = (height - 1) ; // sum of reflection column numbers
+  for(int col = 0; col< width; col++) 
+ //@loop_invariant 0<= col && col<= width;
+   {
+      for (int row = 0; row<stopIndex; row++)
+      //@loop_invariant 0<= row && row <= stopIndex;
+
+      {
+        if (row != midRow) {
+           int otherRow = constantSum - row;
+           //@assert is_valid_pixel(row,col,width,height);
+          int index1 = get_index(row,col,width,height);
+          //@assert is_valid_pixel(otherRow,col,width,height);
+          int index2 = get_index(otherRow,col,width,height);
+          //@assert 0<= index1 && index1< \length(result) && index1< \length(pixels);
+          //@assert 0<= index2 && index2< \length(result) && index2 < \length(pixels);
+          result[index1] = pixels[index2];
+          result[index2] = pixels[index1];  // reflection occurs here
+
+                           }
+       }
+    }
+
+  return result;
+}
+
+
+
+
+pixel[] insertPic(pixel[] giant, pixel[] small, int startRow, int startCol,int width,int height) 
+
+{ 
+  pixel[] result = giant;
+  int giantWidth = 2 * width;
+  int giantHeight = 2* height;
+  for (int row = 0; row < height; row++) 
+
+  {
+     for (int col = 0; col<width; col++)
+     //@loop_invariant 0<= startCol +col && startCol +col <= giantWidth;
+     //@loop_invariant 0<= startRow +row && startRow +row <= giantHeight;
+      {   
+        int realRow = row + startRow;
+        int realCol = col + startCol;
+        // actual row and col in giant array
+        int index = get_index(realRow, realCol,giantWidth, giantHeight);
+        //@assert 0<= index && index <= \length(giant);
+        result[index] = small[get_index(row,col,width,height)];
+        // insert from small to giant
+
+       }
+   }
+  return result;
+}
+
+
+pixel[] reflect(pixel[] pixels, int width, int height) 
+//@requires is_valid_imagesize(width, height);
+//@requires width*height == \length(pixels);
+//@ensures \length(\result) == (2*width * 2* height);
+{
+
+  int arrayLength = width*height;
+  pixel[] y_axis = alloc_array(pixel, arrayLength);
+  pixel[] x_axis = alloc_array(pixel, arrayLength);
+  pixel[] both_axis = alloc_array(pixel, arrayLength);
+// reflect array
+
+  y_axis = reflect_y(pixels, width,height);
+  x_axis = reflect_x(pixels,width,height);
+  both_axis =reflect_x(reflect_y(pixels,width,height), width, height);
+// both axis requires 2 reflections;
+
+  //@assert is_valid_imagesize(2*width, 2*height);
+  int giantLength = (2*width) * (2*height);
+  pixel[] giant = alloc_array(pixel, giantLength);
+  giant = insertPic(giant, pixels, 0,0+width,width,height);
+  giant = insertPic(giant, y_axis, 0,0,width,height);
+  giant = insertPic(giant, x_axis, height,width,width,height);
+  giant = insertPic(giant, both_axis,height,0,width,height);
+
+  return giant;
+}

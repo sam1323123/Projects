@@ -1,0 +1,203 @@
+#use <conio>
+#use <util> 
+/*
+ * Doubly linked lists with point
+ * 
+ * A text buffer is a doubly linked list (dll), where one of the
+ * elements in the dll is designated as containing the point.  The
+ * list is terminated on both ends with dummy nodes whose contents are
+ * never inspected.
+ * 
+ * 15-122 Principles of Imperative Computation */
+
+/*** Interface (missing appropriate contracts) ***/
+
+typedef struct dll_node dll;
+struct dll_node {
+  elem data; /* This is defined elsewhere (gapbuf.c0 or elem-char.c0) */
+  dll* next;
+  dll* prev;
+};
+
+typedef struct dll_pt_header dll_pt;
+struct dll_pt_header {
+  dll* start; /* the fist node of the list (on the left)  */
+  dll* point; /* the current node (where the cursor is)   */
+  dll* end;   /* the last node of the list (on the right) */
+};
+
+bool is_dll_pt(dll_pt* B);
+
+bool dll_pt_at_left(dll_pt* B);  /* Returns true if the point is first  */
+                                 /*   first (non-terminal) node         */
+bool dll_pt_at_right(dll_pt* B); /* Returns true if the point is last   */
+                                 /*   last (non-terminal) node          */
+
+void dll_pt_forward(dll_pt* B);  /* Moves the point forward (right)     */
+void dll_pt_backward(dll_pt* B); /* Moves the point backward (left)     */
+void dll_pt_delete(dll_pt* B);   /* Remove the current point            */
+
+/*** Implementation ***/
+
+bool is_segment_next(dll* start, dll* end)
+//@requires start != NULL && end != NULL ;
+{
+   if(start == end) return true;
+   else 
+   { if(start->next == NULL) return false ;
+     else return is_segment_next(start->next, end) ;
+   }
+   // tests for path and all next != NULL
+} 
+
+bool pass_point_next(dll* start, dll* point, dll* end)
+//@requires start != NULL && point != NULL && end != NULL;
+{
+   if(point == start) 
+   {
+      // println("PASSED PPN"); 
+       return true ;
+   }
+   else if(start == end) 
+   {
+      // println("FAILED PPN"); 
+       return false ;
+   }
+   else return pass_point_next(start->next, point, end) ;
+}
+
+
+bool is_segment_prev(dll* end, dll* start)
+//@requires start!= NULL && end != NULL;
+{
+   if(end == start) return true;
+   else 
+   {   
+       if(end->prev == NULL) return false ; 
+       else return is_segment_prev(end->prev, start);
+   }
+ // tests path and all prev != NULL 
+}
+
+bool pass_point_prev(dll* end, dll* point, dll* start) 
+// does not prove not empty
+//@requires start != NULL && point != NULL && end != NULL ;
+{  
+   if(end == point) 
+   {//println("PASSED PPP"); 
+        return true ;
+   }
+   else if(end == start) return false;
+   else return pass_point_prev(end->prev, point, start);    
+}
+
+bool dll_empty(dll* start, dll* point, dll* end)
+//@requires start != NULL && point != NULL && end != NULL ;
+{
+  if(point != start && point != end) return false ; //not empty
+  else return true  ; 
+}
+
+bool next_prev_mirror(dll* start, dll* end)
+//@requires start != NULL && end != NULL ;
+{
+    dll* s = start ;
+    dll* e = end ;
+    while(s != e)
+    {  dll* temp = s->next ;
+       //@assert temp != NULL ;
+       if(temp->prev != s) return false;
+       //@assert s->next != NULL ; 
+       s = s->next ; 
+    }
+    return true ;
+
+}
+
+bool is_dll_pt(dll_pt* B) 
+// returns true if point is at either start or end (see empty function)
+{
+    if(B == NULL) return false;
+    else
+    { 
+       dll* st = B->start ;
+       dll* pt = B->point ;
+       dll* en = B->end ;
+       // println("REACHED HERE 1") ;
+       if (st == NULL || pt == NULL || en == NULL) return false ;
+       else if(dll_empty(st, pt, en)) {println("1.5"); return false ;}
+       else 
+       { // println("REACHED HERE 2");
+          bool next = is_segment_next(st, en) && pass_point_next(st,pt,en);
+          if(next == false) println("NEXT IS FALSE");
+          bool prev = is_segment_prev(en,st) && pass_point_prev(en,pt,st);
+          return next && prev && next_prev_mirror(st, en);       
+          //not empty and passes next and prev test and mirrors 
+       }
+    }
+
+}
+
+bool dll_pt_at_left(dll_pt* B)
+//@requires B != NULL ;
+//@requires is_dll_pt(B);
+//@ensures is_dll_pt(B);
+{
+   //@assert  B->point != NULL ; 
+   return B->point->prev == B->start ;
+}
+
+bool dll_pt_at_right(dll_pt* B)
+//@requires B != NULL ;
+//@requires is_dll_pt(B);
+//@ensures is_dll_pt(B);
+{
+   //@assert  B->point != NULL ;
+   return B->point->next == B->end ;
+}
+
+void dll_pt_forward(dll_pt* B)
+//@requires B != NULL;
+//@requires is_dll_pt(B);
+//@requires ! dll_pt_at_right(B) ;
+//@ensures is_dll_pt(B);
+{
+   //@assert B->point != NULL ; 
+   dll* new_pt = B->point->next ;
+   B->point = new_pt ; 
+   return ;
+}
+
+void dll_pt_backward(dll_pt* B)
+//@requires B != NULL;
+//@requires is_dll_pt(B);
+//@requires ! dll_pt_at_left(B) ;
+//@ensures is_dll_pt(B);
+{
+    //@assert B->point != NULL ;
+    dll* new_pt = B->point->prev ;
+    B->point = new_pt ;
+    return ;     
+}
+
+void dll_pt_delete(dll_pt* B)
+//@requires B != NULL;
+//@requires is_dll_pt(B);
+//@requires ! dll_empty(B->start, B->point, B->end) ; 
+//requires !(B->point->next == B->end && B->point->prev == B->start) ; 
+//@requires !(dll_pt_at_right(B) && dll_pt_at_left(B)) ;
+//@ensures is_dll_pt(B) ;
+{  
+    if(B->point->next == B->end && B->point->prev == B->start) return ;
+    else 
+    {
+        dll* new_pt = B->point->next ;
+        //@assert B->point->prev != NULL && B->point->next != NULL ;
+        B->point->prev->next = new_pt ;
+        B->point->next->prev = B->point->prev ;
+        if(new_pt == B->end) B->point = new_pt->prev ;
+        else B->point = new_pt ; // cursor moves to right of delete 
+        return ;
+    }
+
+}
