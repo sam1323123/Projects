@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "csapp.h"
-#include "cache.h"
+#include “data_cache.h"
 #include <assert.h> 
 #include <error.h>
 
@@ -37,8 +37,8 @@ int error_handler(int fd)
 {
   if(fd != -1 && (errno == ECONNRESET || errno == EPIPE) ) 
     {
-      Close(fd) ; //if fd is open ie != -1 
-      // errno = 0 ;
+      Close(fd) ; //if fd is open ie fd != -1 
+      errno = 0 ;
       return 1 ;
     }
   return 0; //no error detected
@@ -91,14 +91,11 @@ void *client_thread(void *vargp){
   
   if(Rio_readlineb(&rio , buf, MAXLINE) >= 0) {
     //keeps connection alive until EOF detected
-    dbg_printf(buf) ;// check http request
  
     sscanf(buf,"%s %s %s", method, uri, version) ;
     if(strcasecmp(method, "GET") )
       {
       // if not method get
-	dbg_printf(method) ;
-	dbg_printf("METHOD NOT IMPLEMENTED\n") ;
 	printf( "Proxy does not implement this method\n") ;
 	//Close(connfd) ; //close connection to client
 	return NULL;
@@ -107,11 +104,10 @@ void *client_thread(void *vargp){
     int parse_success ;
     parse_success = parse_uri(uri,serv, port, path) ; 
     // get server name ,port and request path
-    dbg_printf(serv) ; dbg_printf("THIS IS SERVER \n");
-    dbg_printf(port) ; dbg_printf("THIS IS PORT \n"); 
  
     P(&(Cache->lock)) ;//get and insert cannot occur concurrently
-    cache_line_t *cached = cache_get(serv, path) ;
+ 
+   cache_line_t *cached = cache_get(serv, path) ;
 
     V(&(Cache->lock)) ; 
     if(cached != NULL) //object exists in cache
@@ -120,7 +116,6 @@ void *client_thread(void *vargp){
 
 	Rio_writen(connfd, cached->object, s) ;
 	// transfer to client 
-	cached->rdr-- ; // reduce reader count
 	V(&(cached->lock)) ; 
 	//release lock that was locked in cache_get 
 	Close(connfd);
@@ -130,9 +125,7 @@ void *client_thread(void *vargp){
     if( parse_success && (clientfd = Open_clientfd(serv, port)) != -1 ) 
       //successful connection with web server after successful parse
       {// establish socket to server
-	sprintf(buf, "%s %s %s\r\n" ,method, path, VERSION) ;
-
-	dbg_printf("SEND "); dbg_printf(buf) ;
+	sprintf(buf, "%s %s %s\r\n" ,method, path, VERSION) ;;
 
 	Rio_writen(clientfd, buf, strlen(buf)) ; 
 	if(error_handler(clientfd))
@@ -145,7 +138,6 @@ void *client_thread(void *vargp){
       }
     else // unsuccessful connection
       {
-	dbg_printf("FAILED TO CONNECT "); dbg_printf(buf) ;
 	Close(connfd) ;      
 	return NULL ; 
       }
@@ -166,32 +158,21 @@ void *client_thread(void *vargp){
 /* obtain webserver, port num and path from client string */
 int parse_uri(char* uri, char* server, char* port, char* path) 
 {
-  //char subPath[MAXLINE];
   char*bin ; 
   int prot = 10 ; // length to place http:// type strings
   char hd[prot] ;
-  // int numRead ;
-  dbg_printf("URI = ") ;
-  dbg_printf(uri) ;
   char *start = uri ; // start address of uri
   bin = strstr(uri,"//") ;
   if(bin == NULL) return 0 ; //malformed uri
   strncpy(hd,uri,(bin-start)) ; //copy protocol into hd
 
-  dbg_printf(hd) ; dbg_printf(" THIS IS hd\n") ;
 
   long length = strlen(hd)+ 1 ; //lenth of protocol + // 
   uri = start + length ;
-  
-  dbg_printf(uri) ; dbg_printf(" THIS IS uri\n");
-
   bin = strchr(uri, '/') ; //get start addr of path
   if(bin == NULL) strcpy(path, "/") ; //default path
   //else bin is at first / in uri 
   else strcpy(path, bin) ; //cpy path starting from / in url
-  
-  dbg_printf(path) ; dbg_printf(" THIS IS PATH\n"); 
- 
   
   length = (unsigned long)bin ; //address at first /
   bin = strchr(uri, ':') ; //check if port is present
@@ -208,22 +189,18 @@ int parse_uri(char* uri, char* server, char* port, char* path)
   else {
     strncpy(server, uri, ((char*)length-uri)) ; //copy IP into server
   
-    dbg_printf(server) ; dbg_printf(" pServer\n");
     strcpy(port, "80") ;
   }
-  dbg_printf(port) ; dbg_printf("\n") ;
   
   return 1 ;
  
 }
 
 /* send required hdrs to web server and initiate reply */ 
-/*GET request line already sent*/
-//must we account for repeats of hdr? What about host name?  YES
-//ALSO ask can we assume that readlineb will not get interrupted and 
+/*GET request line already sent before call to this func*/
 void process_requesthdrs(rio_t *rio, int connfd,int clientfd, char *host)
 {
-  char buf[MAXLINE] ;// title[MAXLINE], data[MAXLINE];
+  char buf[MAXLINE] ;
   buf[0] = '0' ; 
   while(strcmp(buf, "\r\n")) //while not at hdr end
     {

@@ -1,0 +1,7 @@
+
+Alloc_algo is a dynamic memory allocator for Linux machines. Not all source files are included.
+
+The algorithm is a good-fit, explicit free list implementation that performs immediate coalescing and various space optimizations.
+
+
+

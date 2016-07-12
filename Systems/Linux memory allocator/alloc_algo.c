@@ -1,9 +1,6 @@
 /*
- * mm.c
+ * alloc_algo.c
  *
- * NOTE TO STUDENTS: Replace this header comment with your own header
- * comment that gives a high level description of your solution.
- * Explicit Style
  */
 #include <assert.h>
 #include <stdio.h>
@@ -11,7 +8,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "mm.h"
+#include “alloc_algo.h”
 #include "memlib.h"
 
 /* If you want debugging output, use the following macro.  When you hand
